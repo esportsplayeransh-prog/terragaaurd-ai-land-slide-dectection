@@ -1,10 +1,12 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 import joblib
 import pandas as pd
+import os
 
 app = Flask(__name__)
 CORS(app)
+
 
 # --------------------------------------------------
 # Load trained Random Forest
@@ -87,9 +89,18 @@ def convert_features(data):
 
 
 # --------------------------------------------------
+# HOME PAGE
+# --------------------------------------------------
+
+@app.route("/")
+def home():
+    return send_file("terraguard-ai.html")
+
+
+# --------------------------------------------------
 # Health check
 # --------------------------------------------------
-from flask import Flask, jsonify, request, send_file
+
 @app.get("/api/health")
 def health():
     return jsonify({
@@ -130,6 +141,8 @@ def predict():
 
         # Create model input
         sample = pd.DataFrame([encoded])
+
+        # Keep exact feature order expected by model
         sample = sample[features]
 
         # Prediction
@@ -171,7 +184,12 @@ def predict():
 # --------------------------------------------------
 # Run server
 # --------------------------------------------------
+
 if __name__ == "__main__":
-    import os
+
     port = int(os.environ.get("PORT", 10000))
-    app.run(host="0.0.0.0", port=port)
+
+    app.run(
+        host="0.0.0.0",
+        port=port
+    )
